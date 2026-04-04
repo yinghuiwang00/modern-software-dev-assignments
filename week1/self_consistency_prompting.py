@@ -2,9 +2,17 @@ import os
 import re
 from collections import Counter
 from dotenv import load_dotenv
-from ollama import chat
+from openai import OpenAI
 
 load_dotenv()
+
+# 获取 Zhipu API Key
+ZHIPU_API_KEY = os.environ.get('ZHIPU_API_KEY')
+if not ZHIPU_API_KEY:
+    raise ValueError("ZHIPU_API_KEY environment variable is not set")
+
+# 初始化 Zhipu API 客户端
+client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
 
 NUM_RUNS_TIMES = 5
 
@@ -47,15 +55,20 @@ def test_your_prompt(system_prompt: str) -> bool:
     answers: list[str] = []
     for idx in range(NUM_RUNS_TIMES):
         print(f"Running test {idx + 1} of {NUM_RUNS_TIMES}")
-        response = chat(
-            model="llama3.1:8b",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": USER_PROMPT},
-            ],
-            options={"temperature": 1},
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": USER_PROMPT},
+        ]
+        print("Sending messages:")
+        for msg in messages:
+            print(f"  {msg['role']}: {msg['content']}")
+        response = client.chat.completions.create(
+            model="glm-4",  # 使用 Zhipu 的模型名称
+            messages=messages,
+            temperature=1,
         )
-        output_text = response.message.content
+        output_text = response.choices[0].message.content
+        print(f"Response from model: {output_text}")
         final_answer = extract_final_answer(output_text)
         print(f"Run {idx + 1} answer: {final_answer}")
         answers.append(final_answer.strip())

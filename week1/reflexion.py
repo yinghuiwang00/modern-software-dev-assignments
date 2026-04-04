@@ -2,9 +2,17 @@ import os
 import re
 from typing import Callable, List, Tuple
 from dotenv import load_dotenv
-from ollama import chat
+from openai import OpenAI
 
 load_dotenv()
+
+# 获取 Zhipu API Key
+ZHIPU_API_KEY = os.environ.get('ZHIPU_API_KEY')
+if not ZHIPU_API_KEY:
+    raise ValueError("ZHIPU_API_KEY environment variable is not set")
+
+# 初始化 Zhipu API 客户端
+client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
 
 NUM_RUNS_TIMES = 1
 
@@ -15,7 +23,7 @@ Keep the implementation minimal.
 """
 
 # TODO: Fill this in!
-YOUR_REFLEXION_PROMPT = ""
+YOUR_REFLEXION_PROMPT = "Based on the previous code and the failures, improve the implementation. Output ONLY a single fenced Python code block with the updated function. No prose or comments."
 
 
 # Ground-truth test suite used to evaluate generated code
@@ -80,15 +88,15 @@ def evaluate_function(func: Callable[[str], bool]) -> Tuple[bool, List[str]]:
 
 
 def generate_initial_function(system_prompt: str) -> str:
-    response = chat(
-        model="llama3.1:8b",
+    response = client.chat.completions.create(
+        model="glm-4",  # 使用 Zhipu 的模型名称
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": "Provide the implementation now."},
         ],
-        options={"temperature": 0.2},
+        temperature=0.2,
     )
-    return extract_code_block(response.message.content)
+    return extract_code_block(response.choices[0].message.content)
 
 
 def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
@@ -96,7 +104,7 @@ def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
 
     Return a string that will be sent as the user content alongside the reflexion system prompt.
     """
-    return ""
+    return f"Previous code:\n{prev_code}\n\nFailures:\n" + "\n".join(failures) + "\n\nPlease improve the code based on these failures."
 
 
 def apply_reflexion(
@@ -106,16 +114,16 @@ def apply_reflexion(
     failures: List[str],
 ) -> str:
     reflection_context = build_context(prev_code, failures)
-    print(f"REFLECTION CONTEXT: {reflection_context}, {reflexion_prompt}")
-    response = chat(
-        model="llama3.1:8b",
+    print(f"REFLECTION CONTEXT: \n {reflection_context}, {reflexion_prompt}")
+    response = client.chat.completions.create(
+        model="glm-4",  # 使用 Zhipu 的模型名称
         messages=[
             {"role": "system", "content": reflexion_prompt},
             {"role": "user", "content": reflection_context},
         ],
-        options={"temperature": 0.2},
+        temperature=0.2,
     )
-    return extract_code_block(response.message.content)
+    return extract_code_block(response.choices[0].message.content)
 
 
 def run_reflexion_flow(

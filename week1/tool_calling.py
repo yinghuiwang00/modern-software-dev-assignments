@@ -4,9 +4,17 @@ import os
 from typing import Any, Dict, List, Optional, Tuple, Callable
 
 from dotenv import load_dotenv
-from ollama import chat
+from openai import OpenAI
 
 load_dotenv()
+
+# 获取 Zhipu API Key
+ZHIPU_API_KEY = os.environ.get('ZHIPU_API_KEY')
+if not ZHIPU_API_KEY:
+    raise ValueError("ZHIPU_API_KEY environment variable is not set")
+
+# 初始化 Zhipu API 客户端
+client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
 
 NUM_RUNS_TIMES = 3
 
@@ -100,15 +108,15 @@ def extract_tool_call(text: str) -> Dict[str, Any]:
 
 
 def run_model_for_tool_call(system_prompt: str) -> Dict[str, Any]:
-    response = chat(
-        model="llama3.1:8b",
+    response = client.chat.completions.create(
+        model="glm-4",  # 使用 Zhipu 的模型名称
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": "Call the tool now."},
         ],
-        options={"temperature": 0.3},
+        temperature=0.3,
     )
-    content = response.message.content
+    content = response.choices[0].message.content
     return extract_tool_call(content)
 
 
