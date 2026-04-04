@@ -5,10 +5,16 @@ import re
 from typing import List
 import json
 from typing import Any
-from ollama import chat
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
+
+ZHIPU_API_KEY = os.environ.get("ZHIPU_API_KEY")
+if not ZHIPU_API_KEY:
+    raise ValueError("ZHIPU_API_KEY environment variable is not set")
+
+client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
 
 BULLET_PREFIX_PATTERN = re.compile(r"^\s*([-*•]|\d+\.)\s+")
 KEYWORD_PREFIXES = (
@@ -87,3 +93,55 @@ def _looks_imperative(sentence: str) -> bool:
         "investigate",
     }
     return first.lower() in imperative_starters
+
+
+def _parse_json_array(text: str) -> List[str]:
+    json_text = text.strip()
+    if json_text.startswith("```") and json_text.endswith("```"):
+        json_text = json_text.strip("`")
+        if json_text.lower().startswith("json\n"):
+            json_text = json_text[5:]
+    try:
+        data = json.loads(json_text)
+        if isinstance(data, list) and all(isinstance(item, str) for item in data):
+            return [item.strip() for item in data if item.strip()]
+    except json.JSONDecodeError:
+        pass
+    return []
+
+
+def extract_action_items_llm(text: str) -> List[str]:
+    """Use a Zhipu model to extract action items from note text."""
+    if not text.strip():
+        return []
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an assistant that extracts action items from meeting notes. "
+                "Respond with a JSON array of action item strings only, without extra text."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                "Extract action items from the following note text as a JSON array of strings. "
+                "Use concise action item wording and do not include any explanation.\n\n"
+                f"Note text:\n{text}"
+            ),
+        },
+    ]
+
+    response = client.chat.completions.create(
+        model="glm-4",
+        messages=messages,
+        temperature=0.0,
+    )
+    output_text = response.choices[0].message.content
+    items = _parse_json_array(output_text)
+    if items:
+        return items
+
+    # Fallback: use heuristic extraction if model output is not valid JSON.
+    return extract_action_items(text)
