@@ -78,7 +78,12 @@ TOOL_REGISTRY: Dict[str, Callable[..., str]] = {
 # ==========================
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = (
+    "You are a helpful assistant with access to tools. "
+    "To call a tool, respond with a JSON object containing 'tool' (string) and 'args' (object). "
+    "Available tool: output_every_func_return_type(file_path: str) - returns a newline-delimited list of 'name: return_type' for each top-level function in the file. "
+    "Do not include any other text in your response."
+)
 
 
 def resolve_path(p: str) -> str:
@@ -108,15 +113,20 @@ def extract_tool_call(text: str) -> Dict[str, Any]:
 
 
 def run_model_for_tool_call(system_prompt: str) -> Dict[str, Any]:
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "Call the tool now."},
+    ]
+    print("Sending messages:")
+    for msg in messages:
+        print(f"  {msg['role']}: {msg['content']}")
     response = client.chat.completions.create(
         model="glm-4",  # 使用 Zhipu 的模型名称
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": "Call the tool now."},
-        ],
+        messages=messages,
         temperature=0.3,
     )
     content = response.choices[0].message.content
+    print(f"Response from model: {content}")
     return extract_tool_call(content)
 
 

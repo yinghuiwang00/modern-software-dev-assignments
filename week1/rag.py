@@ -44,8 +44,12 @@ QUESTION = (
 )
 
 
-# TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = (
+    "You are a helpful coding assistant. Use ONLY the provided context to write the required function. "
+    "Generate a single fenced Python code block containing imports and the function definition. "
+    "Use the documented Base URL and endpoint, send the X-API-Key header, raise an exception for non-200 responses, "
+    "and return only the user's name string."
+)
 
 
 # For this simple example
@@ -60,11 +64,13 @@ REQUIRED_SNIPPETS = [
 
 
 def YOUR_CONTEXT_PROVIDER(corpus: List[str]) -> List[str]:
-    """TODO: Select and return the relevant subset of documents from CORPUS for this task.
-
-    For example, return [] to simulate missing context, or [corpus[0]] to include the API docs.
-    """
-    return []
+    """Select and return the relevant subset of documents from CORPUS for this task."""
+    if not corpus:
+        return []
+    doc = corpus[0]
+    if doc.startswith("[missing_file]") or doc.startswith("[load_error]"):
+        return []
+    return [doc]
 
 
 def make_user_prompt(question: str, context_docs: List[str]) -> str:
