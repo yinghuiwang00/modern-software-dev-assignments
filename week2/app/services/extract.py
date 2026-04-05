@@ -1,20 +1,29 @@
 from __future__ import annotations
 
+import json
+import logging
 import os
 import re
-from typing import List
-import json
-from typing import Any
+from typing import Any, List, Optional
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from ..config import get_settings
+
 load_dotenv()
 
-ZHIPU_API_KEY = os.environ.get("ZHIPU_API_KEY")
-if not ZHIPU_API_KEY:
-    raise ValueError("ZHIPU_API_KEY environment variable is not set")
+logger = logging.getLogger(__name__)
 
-client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
+# Initialize OpenAI client (optional for testing)
+client: Optional[OpenAI] = None
+settings = get_settings()
+ZHIPU_API_KEY = settings.zhipu_api_key or os.environ.get("ZHIPU_API_KEY")
+
+if ZHIPU_API_KEY:
+    client = OpenAI(api_key=ZHIPU_API_KEY, base_url="https://open.bigmodel.cn/api/paas/v4/")
+else:
+    logger.warning("ZHIPU_API_KEY not set, LLM extraction will not be available")
 
 BULLET_PREFIX_PATTERN = re.compile(r"^\s*([-*•]|\d+\.)\s+")
 KEYWORD_PREFIXES = (
@@ -38,6 +47,15 @@ def _is_action_line(line: str) -> bool:
 
 
 def extract_action_items(text: str) -> List[str]:
+    """Extract action items from text using heuristic pattern matching.
+
+    Args:
+        text: Note text to extract action items from.
+
+    Returns:
+        List[str]: List of extracted action item strings.
+    """
+    logger.debug(f"Extracting action items using heuristics from text of length {len(text)}")
     lines = text.splitlines()
     extracted: List[str] = []
     for raw_line in lines:
@@ -69,6 +87,7 @@ def extract_action_items(text: str) -> List[str]:
             continue
         seen.add(lowered)
         unique.append(item)
+    logger.info(f"Extracted {len(unique)} action items using heuristics")
     return unique
 
 
@@ -111,10 +130,23 @@ def _parse_json_array(text: str) -> List[str]:
 
 
 def extract_action_items_llm(text: str) -> List[str]:
-    """Use a Zhipu model to extract action items from note text."""
+    """Use a Zhipu model to extract action items from note text.
+
+    Args:
+        text: Note text to extract action items from.
+
+    Returns:
+        List[str]: List of extracted action item strings.
+    """
     if not text.strip():
+        logger.debug("Empty text provided for LLM extraction")
         return []
 
+    if client is None:
+        logger.warning("LLM client not available, falling back to heuristics")
+        return extract_action_items(text)
+
+    logger.info(f"Extracting action items using LLM from text of length {len(text)}")
     messages = [
         {
             "role": "system",
@@ -133,15 +165,23 @@ def extract_action_items_llm(text: str) -> List[str]:
         },
     ]
 
-    response = client.chat.completions.create(
-        model="glm-4",
-        messages=messages,
-        temperature=0.0,
-    )
-    output_text = response.choices[0].message.content
-    items = _parse_json_array(output_text)
-    if items:
-        return items
+    try:
+        response = client.chat.completions.create(
+            model="glm-4",
+            messages=messages,
+            temperature=0.0,
+        )
+        output_text = response.choices[0].message.content
+        logger.debug(f"LLM response: {output_text[:100]}...")
+        items = _parse_json_array(output_text)
+        if items:
+            logger.info(f"LLM extraction successful: {len(items)} action items")
+            return items
 
-    # Fallback: use heuristic extraction if model output is not valid JSON.
-    return extract_action_items(text)
+        # Fallback: use heuristic extraction if model output is not valid JSON.
+        logger.warning("LLM output was not valid JSON, falling back to heuristics")
+        return extract_action_items(text)
+    except Exception as e:
+        logger.error(f"LLM extraction failed: {e}")
+        logger.info("Falling back to heuristic extraction")
+        return extract_action_items(text)
