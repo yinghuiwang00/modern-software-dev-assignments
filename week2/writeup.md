@@ -13,17 +13,17 @@ Name: **TODO** \
 SUNet ID: **TODO** \
 Citations: **TODO**
 
-This assignment took me about **TODO** hours to do. 
+This assignment took me about **TODO** hours to do.
 
 
 ## YOUR RESPONSES
 For each exercise, please include what prompts you used to generate the answer, in addition to the location of the generated response. Make sure to clearly add comments in your code documenting which parts are generated.
 
 ### Exercise 1: Scaffold a New Feature
-Prompt: 
+Prompt:
 ```
 TODO
-``` 
+```
 
 Generated Code Snippets:
 ```
@@ -31,9 +31,9 @@ TODO: List all modified code files with the relevant line numbers.
 ```
 
 ### Exercise 2: Add Unit Tests
-Prompt: 
+Prompt:
 ```
-Prompt: 
+Prompt:
 ```
 Write comprehensive unit tests for the `extract_action_items_llm()` function in `week2/app/services/extract.py`. The tests should be added to `week2/tests/test_extract.py`.
 
@@ -84,8 +84,8 @@ Make sure to:
 - Add comments explaining what each test validates
 - Ensure tests are isolated and don't depend on external services
 
-``` 
-``` 
+```
+```
 
 Generated Code Snippets:
 ```
@@ -93,7 +93,7 @@ TODO: List all modified code files with the relevant line numbers.
 ```
 
 ### Exercise 3: Refactor Existing Code for Clarity
-Prompt: 
+Prompt:
 ```
 Perform a comprehensive refactor of the backend code in the week2/app directory, focusing on the following areas:
 
@@ -238,7 +238,7 @@ Create new files: config.py, schemas.py, exceptions.py, models/, repositories/
 
 
 ---
-``` 
+```
 
 Generated/Modified Code Snippets:
 ```
@@ -328,7 +328,7 @@ week2/app/db.py - Replaced by repository pattern
 
 
 ### Exercise 4: Use Agentic Mode to Automate a Small Task
-Prompt: 
+Prompt:
 ```
 Implement two small features to enhance the Action Item Extractor application. These features demonstrate how AI agents can automate development tasks while following established patterns.
 
@@ -426,14 +426,14 @@ Implement two small features to enhance the Action Item Extractor application. T
 ## Success Criteria
 
 ✅ Dedicated LLM extraction endpoint works correctly
-✅ "Extract LLM" button uses the new dedicated endpoint  
+✅ "Extract LLM" button uses the new dedicated endpoint
 ✅ Notes can be listed via API endpoint
 ✅ "List Notes" button displays all saved notes
 ✅ Both new features work seamlessly with existing functionality
 ✅ Code follows established patterns and conventions
 ✅ No breaking changes to existing functionality
 ✅ Proper error handling and user feedback
-``` 
+```
 
 Generated Code Snippets:
 ```
@@ -495,7 +495,7 @@ week2/frontend/index.html - Updated LLM button and added notes listing functiona
 
 
 ### Exercise 5: Generate a README from the Codebase
-Prompt: 
+Prompt:
 ```
 Analyze the current codebase in `week2/` directory and generate a well-structured, comprehensive `README.md` file. This README should be professional, developer-friendly, and demonstrate understanding of the entire project architecture.
 
@@ -610,7 +610,7 @@ Focus on creating documentation that would be helpful for:
 - Anyone wanting to extend or modify the application
 
 
-``` 
+```
 
 Generated Code Snippets:
 ```
@@ -619,6 +619,6 @@ TODO: List all modified code files with the relevant line numbers.
 
 
 ## SUBMISSION INSTRUCTIONS
-1. Hit a `Command (⌘) + F` (or `Ctrl + F`) to find any remaining `TODO`s in this file. If no results are found, congratulations – you've completed all required fields. 
+1. Hit a `Command (⌘) + F` (or `Ctrl + F`) to find any remaining `TODO`s in this file. If no results are found, congratulations – you've completed all required fields.
 2. Make sure you have all changes pushed to your remote repository for grading.
-3. Submit via Gradescope. 
+3. Submit via Gradescope.

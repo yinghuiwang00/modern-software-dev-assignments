@@ -5,26 +5,25 @@ Provides access to OpenWeatherMap API through Model Context Protocol
 """
 import asyncio
 import json
-import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
-from mcp.server.models import InitializationOptions
 from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 
 # Add parent directory to path for absolute imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from server.config import SERVER_NAME, SERVER_VERSION
-from server.weather_service import WeatherService
 from server.utils import (
     format_error_message,
-    rate_limit_warning,
     logger,
+    rate_limit_warning,
 )
+from server.weather_service import WeatherService
 
 # Configure logging to stderr (MCP best practice for STDIO transport)
 # Note: logging.basicConfig() is already called in utils.py
@@ -92,9 +91,7 @@ async def handle_list_tools() -> List[Tool]:
 
 
 @server.call_tool()
-async def handle_call_tool(
-    name: str, arguments: Dict[str, Any] | None
-) -> List[TextContent]:
+async def handle_call_tool(name: str, arguments: Dict[str, Any] | None) -> List[TextContent]:
     """Handle tool calls."""
     try:
         # Initialize weather service
@@ -105,10 +102,7 @@ async def handle_call_tool(
 
                 logger.info(f"Getting current weather for: {city}")
 
-                data = await weather_service.get_current_weather(
-                    city=city,
-                    units=units
-                )
+                data = await weather_service.get_current_weather(city=city, units=units)
 
                 # Check rate limit
                 call_count = weather_service.get_api_call_count()
@@ -116,11 +110,7 @@ async def handle_call_tool(
                 if warning:
                     logger.warning(warning)
 
-                result = {
-                    "success": True,
-                    "data": data,
-                    "warning": warning
-                }
+                result = {"success": True, "data": data, "warning": warning}
 
                 return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -131,11 +121,7 @@ async def handle_call_tool(
 
                 logger.info(f"Getting {days or 3} day forecast for: {city}")
 
-                data = await weather_service.get_weather_forecast(
-                    city=city,
-                    units=units,
-                    days=days
-                )
+                data = await weather_service.get_weather_forecast(city=city, units=units, days=days)
 
                 # Check rate limit
                 call_count = weather_service.get_api_call_count()
@@ -143,11 +129,7 @@ async def handle_call_tool(
                 if warning:
                     logger.warning(warning)
 
-                result = {
-                    "success": True,
-                    "data": data,
-                    "warning": warning
-                }
+                result = {"success": True, "data": data, "warning": warning}
 
                 return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -169,6 +151,7 @@ async def main():
     # Verify API key is set
     try:
         from server.config import OPENWEATHER_API_KEY
+
         logger.info(f"API key configured: {OPENWEATHER_API_KEY[:10]}...")
     except ValueError as e:
         logger.error(f"Configuration error: {e}")

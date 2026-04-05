@@ -1,27 +1,27 @@
 """
 Weather service - Handles interaction with OpenWeatherMap API
 """
-import asyncio
-import httpx
+
 from typing import Any, Dict, Optional
 
+import httpx
+
 from .config import (
+    MAX_RETRIES,
     OPENWEATHER_API_KEY,
     OPENWEATHER_BASE_URL,
     REQUEST_TIMEOUT,
-    MAX_RETRIES,
     RETRY_BACKOFF_BASE,
 )
 from .utils import (
-    validate_city_name,
-    validate_units,
-    validate_days,
-    retry_with_backoff,
-    InvalidAPIKeyError,
     CityNotFoundError,
-    RateLimitError,
+    InvalidAPIKeyError,
     NetworkError,
-    ValidationError,
+    RateLimitError,
+    retry_with_backoff,
+    validate_city_name,
+    validate_days,
+    validate_units,
 )
 
 
@@ -65,11 +65,7 @@ class WeatherService:
         else:
             raise NetworkError(f"API request failed with status {status_code}: {response_text}")
 
-    async def get_current_weather(
-        self,
-        city: str,
-        units: Optional[str] = None
-    ) -> Dict[str, Any]:
+    async def get_current_weather(self, city: str, units: Optional[str] = None) -> Dict[str, Any]:
         """
         Get current weather for a city.
 
@@ -93,16 +89,9 @@ class WeatherService:
 
         # Make API request with retry logic
         async def _make_request():
-            params = {
-                "q": city,
-                "appid": OPENWEATHER_API_KEY,
-                "units": units
-            }
+            params = {"q": city, "appid": OPENWEATHER_API_KEY, "units": units}
 
-            response = await self.client.get(
-                f"{OPENWEATHER_BASE_URL}/weather",
-                params=params
-            )
+            response = await self.client.get(f"{OPENWEATHER_BASE_URL}/weather", params=params)
 
             self.api_call_count += 1
 
@@ -113,11 +102,9 @@ class WeatherService:
 
         try:
             data = await retry_with_backoff(
-                _make_request,
-                max_retries=MAX_RETRIES,
-                base_backoff=RETRY_BACKOFF_BASE
+                _make_request, max_retries=MAX_RETRIES, base_backoff=RETRY_BACKOFF_BASE
             )
-        except Exception as e:
+        except Exception:
             raise
 
         # Format and return response
@@ -130,14 +117,11 @@ class WeatherService:
             "pressure": data.get("main", {}).get("pressure"),
             "description": data.get("weather", [{}])[0].get("description"),
             "wind_speed": data.get("wind", {}).get("speed"),
-            "units": units
+            "units": units,
         }
 
     async def get_weather_forecast(
-        self,
-        city: str,
-        units: Optional[str] = None,
-        days: Optional[int] = None
+        self, city: str, units: Optional[str] = None, days: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Get weather forecast for a city.
@@ -168,13 +152,10 @@ class WeatherService:
                 "q": city,
                 "appid": OPENWEATHER_API_KEY,
                 "units": units,
-                "cnt": days * 8  # OpenWeather returns 3-hour intervals (8 per day)
+                "cnt": days * 8,  # OpenWeather returns 3-hour intervals (8 per day)
             }
 
-            response = await self.client.get(
-                f"{OPENWEATHER_BASE_URL}/forecast",
-                params=params
-            )
+            response = await self.client.get(f"{OPENWEATHER_BASE_URL}/forecast", params=params)
 
             self.api_call_count += 1
 
@@ -185,11 +166,9 @@ class WeatherService:
 
         try:
             data = await retry_with_backoff(
-                _make_request,
-                max_retries=MAX_RETRIES,
-                base_backoff=RETRY_BACKOFF_BASE
+                _make_request, max_retries=MAX_RETRIES, base_backoff=RETRY_BACKOFF_BASE
             )
-        except Exception as e:
+        except Exception:
             raise
 
         # Process forecast data into daily summaries
@@ -209,26 +188,29 @@ class WeatherService:
             temps = [item.get("main", {}).get("temp") for item in day_data]
             feels_like = [item.get("main", {}).get("feels_like") for item in day_data]
             humidity = [item.get("main", {}).get("humidity") for item in day_data]
-            descriptions = [
-                item.get("weather", [{}])[0].get("description")
-                for item in day_data
-            ]
+            descriptions = [item.get("weather", [{}])[0].get("description") for item in day_data]
 
-            daily_forecasts.append({
-                "day": day + 1,
-                "date": day_data[0].get("dt_txt", "").split(" ")[0],
-                "temperature_avg": round(sum(temps) / len(temps), 2) if temps else None,
-                "feels_like_avg": round(sum(feels_like) / len(feels_like), 2) if feels_like else None,
-                "humidity_avg": round(sum(humidity) / len(humidity), 2) if humidity else None,
-                "description": max(set(descriptions), key=descriptions.count) if descriptions else None,
-                "units": units
-            })
+            daily_forecasts.append(
+                {
+                    "day": day + 1,
+                    "date": day_data[0].get("dt_txt", "").split(" ")[0],
+                    "temperature_avg": round(sum(temps) / len(temps), 2) if temps else None,
+                    "feels_like_avg": (
+                        round(sum(feels_like) / len(feels_like), 2) if feels_like else None
+                    ),
+                    "humidity_avg": round(sum(humidity) / len(humidity), 2) if humidity else None,
+                    "description": (
+                        max(set(descriptions), key=descriptions.count) if descriptions else None
+                    ),
+                    "units": units,
+                }
+            )
 
         return {
             "city": data.get("city", {}).get("name"),
             "country": data.get("city", {}).get("country"),
             "forecast": daily_forecasts,
-            "units": units
+            "units": units,
         }
 
     def get_api_call_count(self) -> int:

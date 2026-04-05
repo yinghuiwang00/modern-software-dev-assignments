@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Verify connection to week2 API."""
 
-import httpx
 import asyncio
+
+import httpx
 
 
 async def test_connection():

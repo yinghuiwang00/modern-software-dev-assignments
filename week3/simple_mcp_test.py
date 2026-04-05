@@ -5,15 +5,17 @@
 """
 import asyncio
 import logging
-from mcp.server.models import InitializationOptions
+
 from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 server = Server("simple-test-server")
+
 
 @server.list_tools()
 async def list_tools() -> list[Tool]:
@@ -24,23 +26,24 @@ async def list_tools() -> list[Tool]:
             description="简单的测试工具",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "description": "测试消息"
-                    }
-                }
-            }
+                "properties": {"message": {"type": "string", "description": "测试消息"}},
+            },
         )
     ]
+
 
 @server.call_tool()
 async def call_tool(name: str, arguments: dict | None) -> list[TextContent]:
     """处理工具调用"""
     if name == "test_tool":
-        message = arguments.get("message", "Hello from simple MCP server!") if arguments else "Hello from simple MCP server!"
+        message = (
+            arguments.get("message", "Hello from simple MCP server!")
+            if arguments
+            else "Hello from simple MCP server!"
+        )
         return [TextContent(type="text", text=f"测试成功: {message}")]
     raise ValueError(f"Unknown tool: {name}")
+
 
 async def main():
     """主函数"""
@@ -62,6 +65,7 @@ async def main():
             init_options,
             raise_exceptions=True,
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

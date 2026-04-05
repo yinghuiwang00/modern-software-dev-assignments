@@ -6,15 +6,14 @@ Tests the server functionality using environment variable for API key
 import asyncio
 import os
 import sys
-import json
 from pathlib import Path
 
 # Add project directory to path to allow absolute imports
 project_dir = Path(__file__).parent
 sys.path.insert(0, str(project_dir))
 
+from server.utils import CityNotFoundError, InvalidAPIKeyError, ValidationError
 from server.weather_service import WeatherService
-from server.utils import InvalidAPIKeyError, CityNotFoundError, ValidationError
 
 
 async def test_api_key_from_env():
@@ -71,16 +70,14 @@ async def test_weather_forecast():
     try:
         async with WeatherService() as weather_service:
             print("Fetching 3-day forecast for London...")
-            data = await weather_service.get_weather_forecast(
-                city="London",
-                units="metric",
-                days=3
-            )
+            data = await weather_service.get_weather_forecast(city="London", units="metric", days=3)
 
             print(f"✅ Successfully fetched forecast for {data['city']}, {data['country']}")
-            for day in data['forecast']:
-                print(f"   Day {day['day']} ({day['date']}): "
-                      f"{day['temperature_avg']}°C - {day['description']}")
+            for day in data["forecast"]:
+                print(
+                    f"   Day {day['day']} ({day['date']}): "
+                    f"{day['temperature_avg']}°C - {day['description']}"
+                )
             return True
 
     except InvalidAPIKeyError:
@@ -152,7 +149,7 @@ async def test_rate_limit_tracking():
             print(f"Final API call count: {final_count}")
 
             if final_count == initial_count + 2:
-                print(f"✅ API call count increased correctly by 2")
+                print("✅ API call count increased correctly by 2")
                 return True
             else:
                 print(f"❌ FAILED: Expected {initial_count + 2}, got {final_count}")

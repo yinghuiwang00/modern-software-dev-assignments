@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # ==================== Database Models ====================
+
 
 class Note(BaseModel):
     """Database model for a note."""
@@ -26,13 +25,14 @@ class ActionItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    note_id: Optional[int]
+    note_id: int | None
     text: str
     done: bool
     created_at: datetime
 
 
 # ==================== Request Schemas ====================
+
 
 class ExtractRequest(BaseModel):
     """Request schema for extracting action items."""
@@ -56,6 +56,7 @@ class MarkDoneRequest(BaseModel):
 
 # ==================== Response Schemas ====================
 
+
 class ExtractItemResponse(BaseModel):
     """Response schema for a single extracted action item."""
 
@@ -66,8 +67,10 @@ class ExtractItemResponse(BaseModel):
 class ExtractResponse(BaseModel):
     """Response schema for action item extraction."""
 
-    note_id: Optional[int] = Field(default=None, description="ID of the saved note, if any")
-    items: List[ExtractItemResponse] = Field(default_factory=list, description="Extracted action items")
+    note_id: int | None = Field(default=None, description="ID of the saved note, if any")
+    items: list[ExtractItemResponse] = Field(
+        default_factory=list, description="Extracted action items"
+    )
 
 
 class NoteResponse(BaseModel):
@@ -82,7 +85,7 @@ class ActionItemResponse(BaseModel):
     """Response schema for an action item."""
 
     id: int = Field(..., description="ID of the action item")
-    note_id: Optional[int] = Field(default=None, description="ID of the associated note")
+    note_id: int | None = Field(default=None, description="ID of the associated note")
     text: str = Field(..., description="Text of the action item")
     done: bool = Field(default=False, description="Whether the action item is done")
     created_at: str = Field(..., description="Creation timestamp of the action item")

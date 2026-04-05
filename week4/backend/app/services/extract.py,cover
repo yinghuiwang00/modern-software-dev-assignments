@@ -1,0 +1,73 @@
+> import re
+> from typing import Any
+
+
+> def extract_action_items(text: str) -> list[str]:
+>     lines = [line.strip("- ") for line in text.splitlines() if line.strip()]
+>     return [line for line in lines if line.endswith("!") or line.lower().startswith("todo:")]
+
+
+> def extract_tags(text: str) -> list[str]:
+>     """Extract hashtags from text (e.g., #urgent, #todo, #important, #code-review)."""
+      # Match # followed by word characters, hyphens, and underscores
+>     tags = re.findall(r"#([\w-]+)", text)
+      # Remove duplicates while preserving order
+>     seen = set()
+>     unique_tags = []
+>     for tag in tags:
+>         if tag not in seen:
+>             seen.add(tag)
+>             unique_tags.append(tag)
+>     return unique_tags
+
+
+> def extract_action_items_with_tags(text: str) -> list[dict[str, Any]]:
+>     """Extract action items and their associated tags from text.
+>     This function extracts all bullet points (- or *) as action items.
+>     """
+>     lines = text.splitlines()
+>     action_items = []
+
+>     for line in lines:
+          # Strip whitespace and markdown bullets
+>         stripped_line = line.strip()
+
+          # Check if it's a bullet point
+>         is_bullet = stripped_line.startswith("- ") or stripped_line.startswith("* ")
+
+          # Process if it's a bullet point or matches traditional action item patterns
+>         if is_bullet or stripped_line.endswith("!") or stripped_line.lower().startswith("todo:"):
+              # Remove bullet prefix
+>             if is_bullet:
+>                 item_text = stripped_line[2:]
+!             else:
+!                 item_text = stripped_line
+
+              # Extract tags from the original line before modifying
+>             tags = extract_tags(line)
+
+              # Remove tags from description (for cleaner output)
+>             for tag in tags:
+                  # Replace "#tag" with empty string (preserve order by removing from end)
+>                 item_text = item_text.replace(f"#{tag}", "").strip()
+
+              # Remove "todo:" prefix if present
+>             if item_text.lower().startswith("todo:"):
+>                 item_text = item_text[5:].strip()
+
+              # Remove trailing "!" if present (after tags have been removed)
+>             if item_text.endswith("!"):
+>                 item_text = item_text[:-1].strip()
+
+              # Clean up extra whitespace
+>             item_text = " ".join(item_text.split())
+
+>             if item_text:  # Only add if there's still content after removing tags
+>                 action_items.append(
+>                     {
+>                         "description": item_text,
+>                         "tags": tags,
+>                     }
+>                 )
+
+>     return action_items

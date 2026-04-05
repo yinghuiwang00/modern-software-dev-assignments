@@ -1,13 +1,14 @@
 import os
 import re
 from typing import Callable, List, Tuple
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
 # 获取 Zhipu API Key
-ZHIPU_API_KEY = os.environ.get('ZHIPU_API_KEY')
+ZHIPU_API_KEY = os.environ.get("ZHIPU_API_KEY")
 if not ZHIPU_API_KEY:
     raise ValueError("ZHIPU_API_KEY environment variable is not set")
 
@@ -29,10 +30,10 @@ YOUR_REFLEXION_PROMPT = "Based on the previous code and the failures, improve th
 # Ground-truth test suite used to evaluate generated code
 SPECIALS = set("!@#$%^&*()-_")
 TEST_CASES: List[Tuple[str, bool]] = [
-    ("Password1!", True),       # valid
-    ("password1!", False),      # missing uppercase
-    ("Password!", False),       # missing digit
-    ("Password1", False),       # missing special
+    ("Password1!", True),  # valid
+    ("password1!", False),  # missing uppercase
+    ("Password!", False),  # missing digit
+    ("Password1", False),  # missing special
 ]
 
 
@@ -104,7 +105,11 @@ def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
 
     Return a string that will be sent as the user content alongside the reflexion system prompt.
     """
-    return f"Previous code:\n{prev_code}\n\nFailures:\n" + "\n".join(failures) + "\n\nPlease improve the code based on these failures."
+    return (
+        f"Previous code:\n{prev_code}\n\nFailures:\n"
+        + "\n".join(failures)
+        + "\n\nPlease improve the code based on these failures."
+    )
 
 
 def apply_reflexion(

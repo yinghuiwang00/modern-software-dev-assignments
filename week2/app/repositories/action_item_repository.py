@@ -5,8 +5,6 @@ from __future__ import annotations
 import logging
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime
-from typing import List, Optional
 
 from ..config import get_settings
 from ..schemas import ActionItem
@@ -17,7 +15,7 @@ logger = logging.getLogger(__name__)
 class ActionItemRepository:
     """Repository for managing action item database operations."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize the repository with database path.
 
         Args:
@@ -47,7 +45,7 @@ class ActionItemRepository:
         finally:
             connection.close()
 
-    def create_many(self, items: List[str], note_id: Optional[int] = None) -> List[int]:
+    def create_many(self, items: list[str], note_id: int | None = None) -> list[int]:
         """Create multiple action items.
 
         Args:
@@ -59,7 +57,7 @@ class ActionItemRepository:
         """
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            ids: List[int] = []
+            ids: list[int] = []
             for item in items:
                 cursor.execute(
                     "INSERT INTO action_items (note_id, text) VALUES (?, ?)",
@@ -70,7 +68,7 @@ class ActionItemRepository:
             logger.info(f"Created {len(ids)} action items for note {note_id}")
             return ids
 
-    def get_by_id(self, action_item_id: int) -> Optional[ActionItem]:
+    def get_by_id(self, action_item_id: int) -> ActionItem | None:
         """Get an action item by ID.
 
         Args:
@@ -98,7 +96,9 @@ class ActionItemRepository:
             logger.warning(f"Action item with ID {action_item_id} not found")
             return None
 
-    def list_all(self, note_id: Optional[int] = None, limit: Optional[int] = None) -> List[ActionItem]:
+    def list_all(
+        self, note_id: int | None = None, limit: int | None = None
+    ) -> list[ActionItem]:
         """List action items, optionally filtered by note ID.
 
         Args:

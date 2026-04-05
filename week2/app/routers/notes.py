@@ -87,7 +87,7 @@ def get_note_endpoint(
 @router.get("", response_model=List[NoteResponse], status_code=status.HTTP_200_OK)
 def list_notes_endpoint(
     note_repo: NoteRepository = Depends(get_note_repository),
-) -> List[NoteResponse]:
+) -> list[NoteResponse]:
     """List all notes.
 
     Args:
@@ -101,13 +101,9 @@ def list_notes_endpoint(
         notes = note_repo.list_all()
 
         return [
-            NoteResponse(
-                id=note.id, content=note.content, created_at=note.created_at.isoformat()
-            )
+            NoteResponse(id=note.id, content=note.content, created_at=note.created_at.isoformat())
             for note in notes
         ]
     except Exception as e:
         logger.error(f"Error listing notes: {e}")
         raise
-
-

@@ -1,12 +1,13 @@
 import os
 import re
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
 # 获取 Zhipu API Key
-ZHIPU_API_KEY = os.environ.get('ZHIPU_API_KEY')
+ZHIPU_API_KEY = os.environ.get("ZHIPU_API_KEY")
 if not ZHIPU_API_KEY:
     raise ValueError("ZHIPU_API_KEY environment variable is not set")
 
@@ -81,5 +82,3 @@ def test_your_prompt(system_prompt: str) -> bool:
 
 if __name__ == "__main__":
     test_your_prompt(YOUR_SYSTEM_PROMPT)
-
-

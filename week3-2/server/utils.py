@@ -1,48 +1,53 @@
 """
 Utility functions for error handling, retry logic, and logging
 """
+
 import asyncio
 import logging
-import time
-from typing import Any, Dict, Optional, Callable, Awaitable
-from functools import wraps
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 # Configure logging to stderr (not stdout) as per MCP best practices
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
 
 class WeatherAPIError(Exception):
     """Base exception for Weather API errors"""
+
     pass
 
 
 class InvalidAPIKeyError(WeatherAPIError):
     """Raised when API key is invalid"""
+
     pass
 
 
 class CityNotFoundError(WeatherAPIError):
     """Raised when city is not found"""
+
     pass
 
 
 class RateLimitError(WeatherAPIError):
     """Raised when API rate limit is exceeded"""
+
     pass
 
 
 class NetworkError(WeatherAPIError):
     """Raised for network-related errors"""
+
     pass
 
 
 class ValidationError(WeatherAPIError):
     """Raised for input validation errors"""
+
     pass
 
 
@@ -134,7 +139,7 @@ def format_error_message(error: Exception, context: str = "") -> Dict[str, Any]:
     if isinstance(error, InvalidAPIKeyError):
         user_msg = "Invalid OpenWeatherMap API key. Please check your OPENWEATHER_API_KEY environment variable."
     elif isinstance(error, CityNotFoundError):
-        user_msg = f"City not found. Please check the city name and try again."
+        user_msg = "City not found. Please check the city name and try again."
     elif isinstance(error, RateLimitError):
         user_msg = "API rate limit exceeded. Please try again later."
     elif isinstance(error, ValidationError):
@@ -146,11 +151,7 @@ def format_error_message(error: Exception, context: str = "") -> Dict[str, Any]:
 
     return {
         "success": False,
-        "error": {
-            "type": error_type,
-            "message": user_msg,
-            "context": context
-        }
+        "error": {"type": error_type, "message": user_msg, "context": context},
     }
 
 
@@ -179,7 +180,7 @@ async def retry_with_backoff(
     max_retries: int = 3,
     base_backoff: float = 1.0,
     *args,
-    **kwargs
+    **kwargs,
 ) -> Any:
     """
     Execute a function with exponential backoff retry logic.
@@ -214,7 +215,7 @@ async def retry_with_backoff(
 
         # Don't sleep after the last attempt
         if attempt < max_retries:
-            backoff_time = base_backoff * (2 ** attempt)
+            backoff_time = base_backoff * (2**attempt)
             logger.info(f"Retrying in {backoff_time:.1f} seconds...")
             await asyncio.sleep(backoff_time)
 

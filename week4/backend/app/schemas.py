@@ -1,9 +1,23 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
+    title: str = Field(..., min_length=1, max_length=200, description="Note title")
+    content: str = Field(..., min_length=1, max_length=5000, description="Note content")
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("title cannot be empty or whitespace only")
+        return v.strip()
+
+    @field_validator("content")
+    @classmethod
+    def content_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("content cannot be empty or whitespace only")
+        return v.strip()
 
 
 class NoteRead(BaseModel):
@@ -15,8 +29,39 @@ class NoteRead(BaseModel):
         from_attributes = True
 
 
+class NoteUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200, description="Note title")
+    content: str | None = Field(None, min_length=1, max_length=5000, description="Note content")
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_empty(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not v.strip():
+                raise ValueError("title cannot be empty or whitespace only")
+            return v.strip()
+        return v
+
+    @field_validator("content")
+    @classmethod
+    def content_must_not_be_empty(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not v.strip():
+                raise ValueError("content cannot be empty or whitespace only")
+            return v.strip()
+
+
 class ActionItemCreate(BaseModel):
-    description: str
+    description: str = Field(
+        ..., min_length=1, max_length=500, description="Action item description"
+    )
+
+    @field_validator("description")
+    @classmethod
+    def description_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("description cannot be empty or whitespace only")
+        return v.strip()
 
 
 class ActionItemRead(BaseModel):

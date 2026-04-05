@@ -1,5 +1,3 @@
-import os
-import pytest
 from unittest.mock import Mock, patch
 
 from ..app.services.extract import extract_action_items, extract_action_items_llm
@@ -22,6 +20,7 @@ def test_extract_bullets_and_checkboxes():
 
 # ==================== LLM Extraction Tests ====================
 
+
 def test_llm_extract_bullet_lists():
     """Test LLM extraction of bullet points with different formats."""
     text = """
@@ -34,9 +33,13 @@ def test_llm_extract_bullet_lists():
     # Mock the Zhipu API to return valid JSON
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = '["Set up database", "implement API extract endpoint", "Write tests"]'
+    mock_response.choices[0].message.content = (
+        '["Set up database", "implement API extract endpoint", "Write tests"]'
+    )
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert len(items) == 3
         assert "Set up database" in items
@@ -58,7 +61,9 @@ def test_llm_extract_keyword_prefixed_lines():
     mock_response.choices = [Mock()]
     mock_response.choices[0].message.content = '["Review code", "Fix bug", "Deploy to production"]'
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert len(items) == 3
         assert "Review code" in items
@@ -86,7 +91,9 @@ def test_llm_extract_json_array_parsing():
     mock_response.choices = [Mock()]
     mock_response.choices[0].message.content = '["Action 1", "Action 2", "Action 3"]'
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert len(items) == 3
         assert items == ["Action 1", "Action 2", "Action 3"]
@@ -103,9 +110,13 @@ def test_llm_extract_fallback_to_heuristic():
     # Mock the Zhipu API to return invalid JSON (plain text)
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = "Here are some action items: Set up database, implement API, Review code"
+    mock_response.choices[0].message.content = (
+        "Here are some action items: Set up database, implement API, Review code"
+    )
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         # Should fall back to heuristic extraction
         assert len(items) > 0
@@ -122,7 +133,9 @@ def test_llm_extract_markdown_wrapped_json():
     mock_response.choices = [Mock()]
     mock_response.choices[0].message.content = '```json\n["Action 1", "Action 2", "Action 3"]\n```'
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert len(items) == 3
         assert items == ["Action 1", "Action 2", "Action 3"]
@@ -154,9 +167,13 @@ def test_llm_extract_mixed_content():
     # Mock the Zhipu API to return extracted action items
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = '["Set up database schema", "implement API endpoints", "Review pull requests", "Fix authentication bug", "Deploy to staging environment", "Write unit tests", "Update documentation", "Schedule follow-up meeting"]'
+    mock_response.choices[0].message.content = (
+        '["Set up database schema", "implement API endpoints", "Review pull requests", "Fix authentication bug", "Deploy to staging environment", "Write unit tests", "Update documentation", "Schedule follow-up meeting"]'
+    )
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert len(items) == 8
         assert "Set up database schema" in items
@@ -176,9 +193,11 @@ def test_llm_extract_empty_json_array():
     # Mock the Zhipu API to return empty array
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = '[]'
+    mock_response.choices[0].message.content = "[]"
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         assert items == []
 
@@ -195,9 +214,13 @@ def test_llm_extract_deduplication():
     # Mock the Zhipu API to return duplicates
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = '["Set up database", "Set up database", "Set up database"]'
+    mock_response.choices[0].message.content = (
+        '["Set up database", "Set up database", "Set up database"]'
+    )
 
-    with patch('week2.app.services.extract.client.chat.completions.create', return_value=mock_response):
+    with patch(
+        "week2.app.services.extract.client.chat.completions.create", return_value=mock_response
+    ):
         items = extract_action_items_llm(text)
         # The _parse_json_array function doesn't deduplicate, so this will return all items
         # However, in real usage, the LLM should return unique items

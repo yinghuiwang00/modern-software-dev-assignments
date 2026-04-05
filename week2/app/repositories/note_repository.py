@@ -5,8 +5,6 @@ from __future__ import annotations
 import logging
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime
-from typing import List, Optional
 
 from ..config import get_settings
 from ..schemas import Note
@@ -17,7 +15,7 @@ logger = logging.getLogger(__name__)
 class NoteRepository:
     """Repository for managing note database operations."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize the repository with database path.
 
         Args:
@@ -67,7 +65,7 @@ class NoteRepository:
             logger.info(f"Created note with ID {note_id}")
             return note_id
 
-    def get_by_id(self, note_id: int) -> Optional[Note]:
+    def get_by_id(self, note_id: int) -> Note | None:
         """Get a note by ID.
 
         Args:
@@ -89,7 +87,7 @@ class NoteRepository:
             logger.warning(f"Note with ID {note_id} not found")
             return None
 
-    def list_all(self, limit: Optional[int] = None) -> List[Note]:
+    def list_all(self, limit: int | None = None) -> list[Note]:
         """List all notes, ordered by ID descending.
 
         Args:

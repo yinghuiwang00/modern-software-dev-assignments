@@ -5,21 +5,20 @@ Based on week2 API running at localhost:8000
 """
 
 import asyncio
-import httpx
 import json
 import logging
-import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from mcp.server.models import InitializationOptions
+import httpx
 from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
 from mcp.types import (
-    Resource,
-    Tool,
-    TextContent,
-    ImageContent,
     EmbeddedResource,
+    ImageContent,
+    Resource,
+    TextContent,
+    Tool,
 )
 
 # Configure logging
@@ -141,13 +140,7 @@ async def handle_call_tool(
             # Call the extract endpoint
             endpoint = "/action-items/extract-llm" if use_llm else "/action-items/extract"
 
-            response = await client.post(
-                endpoint,
-                json={
-                    "text": text,
-                    "save_note": save_note
-                }
-            )
+            response = await client.post(endpoint, json={"text": text, "save_note": save_note})
 
             if response.status_code != 200:
                 raise Exception(f"API error: {response.status_code} - {response.text}")
@@ -158,7 +151,7 @@ async def handle_call_tool(
             result = {
                 "note_id": data.get("note_id"),
                 "items": data.get("items", []),
-                "count": len(data.get("items", []))
+                "count": len(data.get("items", [])),
             }
 
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
@@ -204,10 +197,7 @@ async def handle_call_tool(
 
             logger.info("Creating new note")
 
-            response = await client.post(
-                "/notes",
-                json={"content": content}
-            )
+            response = await client.post("/notes", json={"content": content})
 
             if response.status_code != 201:
                 raise Exception(f"API error: {response.status_code} - {response.text}")

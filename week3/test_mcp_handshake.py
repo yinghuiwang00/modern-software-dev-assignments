@@ -3,17 +3,15 @@
 测试 MCP server 的基本握手
 """
 import asyncio
-import json
 import sys
 from pathlib import Path
 
 # 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent))
 
+
 async def test_mcp_server():
     """测试 MCP server 的基本功能"""
-    import mcp.server.stdio as stdio_server
-    from mcp.server.models import InitializationOptions
     from mcp.server import NotificationOptions, Server
 
     print("测试: 导入 MCP 模块成功")
@@ -24,11 +22,12 @@ async def test_mcp_server():
     @server.list_tools()
     async def list_tools():
         from mcp.types import Tool
+
         return [
             Tool(
                 name="test_tool",
                 description="Test tool",
-                inputSchema={"type": "object", "properties": {}}
+                inputSchema={"type": "object", "properties": {}},
             )
         ]
 
@@ -37,6 +36,7 @@ async def test_mcp_server():
 
     print("\n所有基本测试通过！")
     print("MCP server 应该可以正常启动")
+
 
 if __name__ == "__main__":
     asyncio.run(test_mcp_server())

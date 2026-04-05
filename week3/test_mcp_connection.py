@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 
+
 async def test_mcp_server():
     """测试 MCP server 的初始化流程"""
     process = await asyncio.create_subprocess_exec(
@@ -13,7 +14,7 @@ async def test_mcp_server():
         "/home/ericwang/workspace/AI_Coding/College_Application_03.08/modern-software-dev-assignments/week3/simple_mcp_test.py",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
     )
 
     print("MCP Server 进程已启动")
@@ -26,11 +27,8 @@ async def test_mcp_server():
         "params": {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {
-                "name": "test-client",
-                "version": "1.0.0"
-            }
-        }
+            "clientInfo": {"name": "test-client", "version": "1.0.0"},
+        },
     }
 
     print("发送初始化请求...")
@@ -50,10 +48,7 @@ async def test_mcp_server():
         print("等待响应超时")
 
     # 发送 initialized 通知
-    initialized = {
-        "jsonrpc": "2.0",
-        "method": "notifications/initialized"
-    }
+    initialized = {"jsonrpc": "2.0", "method": "notifications/initialized"}
 
     print("发送 initialized 通知...")
     process.stdin.write(json.dumps(initialized).encode())
@@ -61,11 +56,7 @@ async def test_mcp_server():
     await process.stdin.drain()
 
     # 现在可以发送其他请求了
-    tools_list_request = {
-        "jsonrpc": "2.0",
-        "id": 2,
-        "method": "tools/list"
-    }
+    tools_list_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
 
     print("发送 tools/list 请求...")
     process.stdin.write(json.dumps(tools_list_request).encode())
@@ -85,6 +76,7 @@ async def test_mcp_server():
     # 清理
     process.terminate()
     await process.wait()
+
 
 if __name__ == "__main__":
     asyncio.run(test_mcp_server())

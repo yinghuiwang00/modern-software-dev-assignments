@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import re
-from typing import Any, List, Optional
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -16,7 +15,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client (optional for testing)
-client: Optional[OpenAI] = None
+client: OpenAI | None = None
 settings = get_settings()
 ZHIPU_API_KEY = settings.zhipu_api_key or os.environ.get("ZHIPU_API_KEY")
 
@@ -46,7 +45,7 @@ def _is_action_line(line: str) -> bool:
     return False
 
 
-def extract_action_items(text: str) -> List[str]:
+def extract_action_items(text: str) -> list[str]:
     """Extract action items from text using heuristic pattern matching.
 
     Args:
@@ -57,7 +56,7 @@ def extract_action_items(text: str) -> List[str]:
     """
     logger.debug(f"Extracting action items using heuristics from text of length {len(text)}")
     lines = text.splitlines()
-    extracted: List[str] = []
+    extracted: list[str] = []
     for raw_line in lines:
         line = raw_line.strip()
         if not line:
@@ -80,7 +79,7 @@ def extract_action_items(text: str) -> List[str]:
                 extracted.append(s)
     # Deduplicate while preserving order
     seen: set[str] = set()
-    unique: List[str] = []
+    unique: list[str] = []
     for item in extracted:
         lowered = item.lower()
         if lowered in seen:
@@ -114,7 +113,7 @@ def _looks_imperative(sentence: str) -> bool:
     return first.lower() in imperative_starters
 
 
-def _parse_json_array(text: str) -> List[str]:
+def _parse_json_array(text: str) -> list[str]:
     json_text = text.strip()
     if json_text.startswith("```") and json_text.endswith("```"):
         json_text = json_text.strip("`")
@@ -129,7 +128,7 @@ def _parse_json_array(text: str) -> List[str]:
     return []
 
 
-def extract_action_items_llm(text: str) -> List[str]:
+def extract_action_items_llm(text: str) -> list[str]:
     """Use a Zhipu model to extract action items from note text.
 
     Args:

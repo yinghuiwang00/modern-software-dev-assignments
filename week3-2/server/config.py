@@ -1,6 +1,7 @@
 """
 Configuration management for Weather MCP Server
 """
+
 import os
 from typing import Optional
 
@@ -11,6 +12,7 @@ OPENWEATHER_API_KEY: Optional[str] = os.getenv("OPENWEATHER_API_KEY")
 if not OPENWEATHER_API_KEY:
     try:
         from dotenv import load_dotenv
+
         load_dotenv()
         OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
     except ImportError:

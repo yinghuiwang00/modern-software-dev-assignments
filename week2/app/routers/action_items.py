@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..config import get_settings
 from ..exceptions import NotFoundError, ServiceError
 from ..repositories import ActionItemRepository, NoteRepository
 from ..schemas import (
     ActionItemResponse,
+    ExtractItemResponse,
     ExtractRequest,
     ExtractResponse,
-    ExtractItemResponse,
     MarkDoneRequest,
     MarkDoneResponse,
 )
@@ -53,7 +52,7 @@ def extract_action_items_endpoint(
         logger.info(f"Extracting action items from text (LLM: {request.use_llm})")
 
         # Save note if requested
-        note_id: Optional[int] = None
+        note_id: int | None = None
         if request.save_note:
             note_id = note_repo.create(request.text)
             logger.info(f"Saved note with ID {note_id}")
@@ -85,9 +84,7 @@ def extract_action_items_endpoint(
         raise
 
 
-@router.post(
-    "/extract-llm", response_model=ExtractResponse, status_code=status.HTTP_200_OK
-)
+@router.post("/extract-llm", response_model=ExtractResponse, status_code=status.HTTP_200_OK)
 def extract_action_items_llm_endpoint(
     request: ExtractRequest,
     action_item_repo: ActionItemRepository = Depends(get_action_item_repository),
@@ -109,7 +106,7 @@ def extract_action_items_llm_endpoint(
         logger.info("Extracting action items from text using LLM (dedicated endpoint)")
 
         # Save note if requested
-        note_id: Optional[int] = None
+        note_id: int | None = None
         if request.save_note:
             note_id = note_repo.create(request.text)
             logger.info(f"Saved note with ID {note_id}")
@@ -140,9 +137,9 @@ def extract_action_items_llm_endpoint(
 
 @router.get("", response_model=List[ActionItemResponse], status_code=status.HTTP_200_OK)
 def list_action_items_endpoint(
-    note_id: Optional[int] = None,
+    note_id: int | None = None,
     action_item_repo: ActionItemRepository = Depends(get_action_item_repository),
-) -> List[ActionItemResponse]:
+) -> list[ActionItemResponse]:
     """List all action items, optionally filtered by note ID.
 
     Args:
@@ -203,5 +200,3 @@ def mark_action_item_done_endpoint(
     except Exception as e:
         logger.error(f"Error marking action item done: {e}")
         raise
-
-
