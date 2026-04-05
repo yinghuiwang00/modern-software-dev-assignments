@@ -1,0 +1,3 @@
+"""
+Weather MCP Server package
+"""
