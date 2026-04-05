@@ -8,9 +8,7 @@ from typing import Any
 class BaseApplicationError(Exception):
     """Base exception for all application errors."""
 
-    def __init__(
-        self, message: str, status_code: int = 500, details: dict[str, Any] | None = None
-    ):
+    def __init__(self, message: str, status_code: int = 500, details: dict[str, Any] | None = None):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
@@ -40,9 +38,7 @@ class DatabaseError(BaseApplicationError):
 class ValidationError(BaseApplicationError):
     """Exception raised when input validation fails."""
 
-    def __init__(
-        self, message: str = "Validation failed", details: dict[str, Any] | None = None
-    ):
+    def __init__(self, message: str = "Validation failed", details: dict[str, Any] | None = None):
         super().__init__(message, status_code=422, details=details)
 
 

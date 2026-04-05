@@ -96,9 +96,7 @@ class ActionItemRepository:
             logger.warning(f"Action item with ID {action_item_id} not found")
             return None
 
-    def list_all(
-        self, note_id: int | None = None, limit: int | None = None
-    ) -> list[ActionItem]:
+    def list_all(self, note_id: int | None = None, limit: int | None = None) -> list[ActionItem]:
         """List action items, optionally filtered by note ID.
 
         Args:

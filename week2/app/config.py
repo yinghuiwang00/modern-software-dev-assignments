@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import Field, field_validator
@@ -31,7 +30,7 @@ class Settings(BaseSettings):
     database_path: str = Field(default="data/app.db", description="Path to SQLite database file")
 
     # API Keys
-    zhipu_api_key: Optional[str] = Field(default=None, description="Zhipu AI API key")
+    zhipu_api_key: str | None = Field(default=None, description="Zhipu AI API key")
 
     # Logging
     log_level: str = Field(default="INFO", description="Logging level")
