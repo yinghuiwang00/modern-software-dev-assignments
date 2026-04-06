@@ -17,7 +17,17 @@
           <input id="note-content" placeholder="Content" required />
           <button type="submit">Add</button>
         </form>
+        <div id="search-container">
+          <input id="search-input" type="text" placeholder="Search notes..." />
+          <button id="search-button">Search</button>
+          <button id="clear-search">Clear</button>
+        </div>
         <ul id="notes"></ul>
+        <div id="extraction-results" style="display: none; margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          <h3>Extracted Action Items</h3>
+          <div id="extraction-content"></div>
+          <button id="close-extraction" style="margin-top: 10px;">Close</button>
+        </div>
       </section>
 
       <section>

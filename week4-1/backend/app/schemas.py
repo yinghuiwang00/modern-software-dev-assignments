@@ -26,3 +26,14 @@ class ActionItemRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ExtractResponse(BaseModel):
+    note_id: int
+    note_content: str
+    extracted_items: list[dict]
+
+
+class NoteUpdate(BaseModel):
+    title: str | None = None
+    content: str | None = None

@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import Note
-from ..schemas import NoteCreate, NoteRead
+from ..schemas import ExtractResponse, NoteCreate, NoteRead, NoteUpdate
+from ..services.extract import extract_action_items
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -29,8 +30,13 @@ def search_notes(q: str | None = None, db: Session = Depends(get_db)) -> list[No
     if not q:
         rows = db.execute(select(Note)).scalars().all()
     else:
+        search_pattern = f"%{q}%"
         rows = (
-            db.execute(select(Note).where((Note.title.contains(q)) | (Note.content.contains(q))))
+            db.execute(
+                select(Note).where(
+                    (Note.title.ilike(search_pattern)) | (Note.content.ilike(search_pattern))
+                )
+            )
             .scalars()
             .all()
         )
@@ -42,4 +48,46 @@ def get_note(note_id: int, db: Session = Depends(get_db)) -> NoteRead:
     note = db.get(Note, note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
+    return NoteRead.model_validate(note)
+
+
+@router.post("/{note_id}/extract", response_model=ExtractResponse)
+def extract_from_note(note_id: int, db: Session = Depends(get_db)) -> ExtractResponse:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    extracted_items = extract_action_items(note.content)
+
+    return ExtractResponse(
+        note_id=note.id,
+        note_content=note.content,
+        extracted_items=extracted_items,
+    )
+
+
+@router.delete("/{note_id}", status_code=204)
+def delete_note(note_id: int, db: Session = Depends(get_db)) -> None:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    db.delete(note)
+    db.flush()
+
+
+@router.put("/{note_id}", response_model=NoteRead)
+def update_note(note_id: int, payload: NoteUpdate, db: Session = Depends(get_db)) -> NoteRead:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    if payload.title is not None:
+        note.title = payload.title
+    if payload.content is not None:
+        note.content = payload.content
+
+    db.add(note)
+    db.flush()
+    db.refresh(note)
     return NoteRead.model_validate(note)

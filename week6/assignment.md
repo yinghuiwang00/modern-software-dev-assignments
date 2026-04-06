@@ -25,7 +25,9 @@ Semgrep is an open-source, static analysis tool that searches code, finds bugs, 
 
 From the **assignment repository root**, run the following command to apply a curated CI-style bundle that includes both code and secrets rules:
 ```bash
-semgrep ci --subdir week6
+#semgrep ci --subdir week6
+
+semgrep scan week6
 ```
 
 ## Task

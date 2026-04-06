@@ -14,3 +14,10 @@ def test_create_and_complete_action_item(client):
     assert r.status_code == 200
     items = r.json()
     assert len(items) == 1
+
+
+def test_complete_action_item_not_found(client):
+    r = client.put("/action-items/999/complete")
+    assert r.status_code == 404
+    data = r.json()
+    assert "not found" in data["detail"].lower()

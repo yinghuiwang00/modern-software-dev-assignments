@@ -17,7 +17,7 @@ This document describes the workflows for using the 5 specialized agents in the 
 Use this workflow when adding a new feature or endpoint to the application.
 
 ### Purpose
-Add a new feature using Test-Driven Development (TDD) principles.
+Add a new feature or fix a bug using Test-Driven Development (TDD) principles.
 
 ### Flow
 ```
