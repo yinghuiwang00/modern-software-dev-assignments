@@ -18,13 +18,16 @@ This assignment took me about **TODO** hours to do.
 
 ## Task 1: Add more endpoints and validations
 a. Links to relevant commits/issues
-> TODO
+> PR: https://github.com/yinghuiwang00/modern-software-dev-assignments/pull/new/task-1-add-endpoints-and-validations
+> Commits:
+> - feat: Add DELETE/PUT endpoints and input validation (473a137)
+> - test: Add comprehensive tests for new endpoints and validation (f19e266)
 
 b. PR Description
-> TODO
+> See PR description above
 
 c. Graphite Diamond generated code review
-> TODO
+> TODO (Enable Graphite Diamond on the PR and document findings here)
 
 ## Task 2: Extend extraction logic
 a. Links to relevant commits/issues

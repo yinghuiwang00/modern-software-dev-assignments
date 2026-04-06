@@ -15,7 +15,7 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 def list_notes(
     db: Session = Depends(get_db),
     q: Optional[str] = None,
-    skip: int = 0,
+    skip: int = Query(0, ge=0),
     limit: int = Query(50, le=200),
     sort: str = Query("-created_at", description="Sort by field, prefix with - for desc"),
 ) -> list[NoteRead]:
@@ -56,6 +56,28 @@ def patch_note(note_id: int, payload: NotePatch, db: Session = Depends(get_db)) 
     db.flush()
     db.refresh(note)
     return NoteRead.model_validate(note)
+
+
+@router.put("/{note_id}", response_model=NoteRead)
+def put_note(note_id: int, payload: NoteCreate, db: Session = Depends(get_db)) -> NoteRead:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    note.title = payload.title
+    note.content = payload.content
+    db.add(note)
+    db.flush()
+    db.refresh(note)
+    return NoteRead.model_validate(note)
+
+
+@router.delete("/{note_id}", status_code=204)
+def delete_note(note_id: int, db: Session = Depends(get_db)) -> None:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    db.delete(note)
+    db.flush()
 
 
 @router.get("/{note_id}", response_model=NoteRead)
